@@ -1,7 +1,7 @@
 # Churn en Fintech
 
 ### Contexto
-Una fintech mexicana esta peridiendo clientes activos en su app. 
+Una fintech mexicana esta perdiendo clientes activos en su app. 
 El problema: *no saben exactamente por que los usuarios abandonan el servicio (churn)*
 
 ### Objetivo
