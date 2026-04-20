@@ -1,0 +1,522 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+
+.top { padding: 1.2rem 0 0.8rem; }
+.badge { display:inline-block; font-size:11px; font-weight:500; padding:3px 10px; border-radius:20px; background:#EEEDFE; color:#3C3489; margin-bottom:6px; }
+.subtitle { font-size:13px; color:var(--color-text-secondary); }
+
+.main-tabs { display:flex; gap:6px; flex-wrap:wrap; margin:14px 0 12px; }
+.mtab { font-size:12px; padding:5px 16px; border-radius:20px; border:0.5px solid var(--color-border-tertiary); background:transparent; color:var(--color-text-secondary); cursor:pointer; transition:all .15s; }
+.mtab.active { font-weight:500; border-color:transparent; }
+.mtab[data-c="purple"].active { background:#EEEDFE; color:#3C3489; }
+.mtab[data-c="teal"].active   { background:#E1F5EE; color:#085041; }
+.mtab[data-c="blue"].active   { background:#E6F1FB; color:#0C447C; }
+.mtab[data-c="amber"].active  { background:#FAEEDA; color:#633806; }
+.mtab[data-c="gray"].active   { background:var(--color-background-secondary); color:var(--color-text-primary); }
+
+.section { display:none; }
+.section.active { display:block; }
+
+.prog-wrap { margin-bottom:10px; }
+.prog-bar { height:3px; background:var(--color-border-tertiary); border-radius:2px; overflow:hidden; }
+.prog-fill { height:100%; background:#534AB7; border-radius:2px; width:0; transition:width .08s; }
+.prog-lbl { font-size:11px; color:var(--color-text-secondary); margin-top:4px; }
+
+/* Dataset tab */
+.pager { display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+.pg-btn { font-size:11px; padding:4px 12px; border-radius:16px; border:0.5px solid var(--color-border-tertiary); background:var(--color-background-secondary); color:var(--color-text-secondary); cursor:pointer; }
+.pg-btn:disabled { opacity:.4; cursor:default; }
+.pg-info { font-size:12px; color:var(--color-text-secondary); }
+.tbl-wrap { overflow-x:auto; border-radius:var(--border-radius-lg); border:0.5px solid var(--color-border-tertiary); max-height:340px; overflow-y:auto; }
+table { width:100%; border-collapse:collapse; font-size:12px; }
+thead { position:sticky; top:0; z-index:2; background:var(--color-background-secondary); }
+th { padding:8px 12px; text-align:left; font-weight:500; font-size:11px; color:var(--color-text-secondary); border-bottom:0.5px solid var(--color-border-tertiary); white-space:nowrap; }
+td { padding:7px 12px; border-bottom:0.5px solid var(--color-border-tertiary); color:var(--color-text-primary); white-space:nowrap; }
+tr:last-child td { border-bottom:none; }
+.tag { display:inline-block; font-size:10px; padding:2px 7px; border-radius:10px; font-weight:500; }
+.tag-churn { background:#FCEBEB; color:#A32D2D; }
+.tag-ok    { background:#EAF3DE; color:#3B6D11; }
+.tag-act   { background:#E6F1FB; color:#0C447C; }
+.tag-inact { background:#F1EFE8; color:#5F5E5A; }
+
+/* Metodología */
+.phase-nav { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:12px; }
+.ph-btn { font-size:11px; padding:4px 12px; border-radius:16px; border:0.5px solid var(--color-border-tertiary); background:transparent; color:var(--color-text-secondary); cursor:pointer; }
+.ph-btn.active { font-weight:500; border-color:transparent; }
+.ph-btn[data-r="purple"].active { background:#EEEDFE; color:#3C3489; }
+.ph-btn[data-r="teal"].active   { background:#E1F5EE; color:#085041; }
+.ph-btn[data-r="blue"].active   { background:#E6F1FB; color:#0C447C; }
+.ph-btn[data-r="amber"].active  { background:#FAEEDA; color:#633806; }
+.phase { display:none; }
+.phase.active { display:block; }
+.ph-head { border-radius:var(--border-radius-lg) var(--border-radius-lg) 0 0; padding:13px 16px 11px; }
+.ph-purple { background:#EEEDFE; }
+.ph-teal   { background:#E1F5EE; }
+.ph-blue   { background:#E6F1FB; }
+.ph-amber  { background:#FAEEDA; }
+.ph-role { font-size:10px; font-weight:500; letter-spacing:.06em; text-transform:uppercase; margin-bottom:2px; }
+.c-purple { color:#534AB7; } .c-teal { color:#0F6E56; } .c-blue { color:#185FA5; } .c-amber { color:#854F0B; }
+.ph-title { font-size:16px; font-weight:500; color:var(--color-text-primary); }
+.ph-sub   { font-size:12px; color:var(--color-text-secondary); margin-top:2px; }
+.ph-body  { border:0.5px solid var(--color-border-tertiary); border-top:none; border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg); padding:14px 16px 18px; margin-bottom:12px; }
+.sec-lbl { font-size:11px; font-weight:500; color:var(--color-text-secondary); text-transform:uppercase; letter-spacing:.05em; margin:14px 0 7px; }
+.sec-lbl:first-child { margin-top:0; }
+.tasks { display:flex; flex-direction:column; gap:6px; }
+.task { border:0.5px solid var(--color-border-tertiary); border-radius:var(--border-radius-md); padding:9px 13px; background:var(--color-background-secondary); }
+.tn { font-size:13px; font-weight:500; color:var(--color-text-primary); margin-bottom:2px; }
+.td { font-size:12px; color:var(--color-text-secondary); line-height:1.55; }
+.code { font-family:var(--font-mono); font-size:11px; background:var(--color-background-tertiary); border:0.5px solid var(--color-border-tertiary); border-radius:4px; padding:1px 6px; color:var(--color-text-secondary); }
+.del-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-top:4px; }
+.del { border-radius:var(--border-radius-md); padding:9px 12px; border:0.5px solid; }
+.del-purple { background:#EEEDFE; border-color:#AFA9EC; }
+.del-teal   { background:#E1F5EE; border-color:#5DCAA5; }
+.del-blue   { background:#E6F1FB; border-color:#85B7EB; }
+.del-amber  { background:#FAEEDA; border-color:#EF9F27; }
+.del-t { font-size:12px; font-weight:500; margin-bottom:2px; }
+.del-purple .del-t { color:#3C3489; } .del-teal .del-t { color:#085041; } .del-blue .del-t { color:#0C447C; } .del-amber .del-t { color:#633806; }
+.del-d { font-size:11px; color:var(--color-text-secondary); }
+.insight { border-left:3px solid #1D9E75; border-radius:0 var(--border-radius-md) var(--border-radius-md) 0; background:#E1F5EE; padding:9px 13px; font-size:13px; color:#085041; margin-bottom:6px; font-style:italic; }
+.warn { border-left:3px solid #BA7517; border-radius:0 var(--border-radius-md) var(--border-radius-md) 0; background:#FAEEDA; padding:9px 13px; font-size:12px; color:#633806; margin-top:8px; line-height:1.6; }
+
+/* Stats */
+.stat-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:9px; margin-bottom:12px; }
+.stat-card { background:var(--color-background-secondary); border:0.5px solid var(--color-border-tertiary); border-radius:var(--border-radius-md); padding:12px 14px; }
+.stat-lbl { font-size:12px; color:var(--color-text-secondary); margin-bottom:4px; }
+.stat-val { font-size:22px; font-weight:500; color:var(--color-text-primary); }
+.stat-sub { font-size:11px; color:var(--color-text-secondary); margin-top:2px; }
+
+.footer { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:8px 0 1rem; }
+.ft { font-size:12px; color:var(--color-text-secondary); }
+.ft span { font-weight:500; color:var(--color-text-primary); }
+.dl-btn { font-size:12px; padding:7px 20px; border-radius:20px; border:0.5px solid var(--color-border-secondary); background:var(--color-background-secondary); color:var(--color-text-primary); cursor:pointer; font-weight:500; }
+.dl-btn:hover { border-color:var(--color-border-primary); }
+</style>
+
+<div class="top">
+  <span class="badge">Churn en Fintech · 20,000 registros</span>
+  <div class="subtitle">Fintech mexicana · Dataset sin procesar con valores faltantes simulados</div>
+</div>
+
+<div class="main-tabs">
+  <button class="mtab active" data-c="gray" onclick="showMain('dataset',this)">Dataset</button>
+  <button class="mtab" data-c="gray" onclick="showMain('stats',this)">Estadísticas</button>
+  <button class="mtab" data-c="purple" onclick="showMain('metodologia',this)">Metodología</button>
+</div>
+
+<div id="prog-wrap" class="prog-wrap">
+  <div class="prog-bar"><div class="prog-fill" id="pf"></div></div>
+  <div class="prog-lbl" id="pl">Generando registros...</div>
+</div>
+
+<div id="section-dataset" class="section" style="display:none">
+  <div class="pager">
+    <button class="pg-btn" id="btn-prev" onclick="changePage(-1)" disabled>← Anterior</button>
+    <span class="pg-info" id="pg-info"></span>
+    <button class="pg-btn" id="btn-next" onclick="changePage(1)">Siguiente →</button>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr>
+        <th>customer_id</th><th>age</th><th>gender</th><th>tenure_months</th>
+        <th>balance</th><th>products</th><th>credit_score</th><th>is_active</th>
+        <th>estimated_salary</th><th>transactions_last_month</th><th>complaints</th><th>churn</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+  <div class="footer">
+    <div class="ft">Formato: <span>CSV</span> · <span>20,000</span> filas · <span>12</span> columnas · con valores faltantes (~5%)</div>
+    <button class="dl-btn" onclick="downloadCSV()">Descargar CSV</button>
+  </div>
+</div>
+
+<div id="section-stats" class="section" style="display:none">
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-lbl">Total clientes</div><div class="stat-val">20,000</div><div class="stat-sub">Registros generados</div></div>
+    <div class="stat-card"><div class="stat-lbl">Tasa de churn</div><div class="stat-val" id="st-churn" style="color:#A32D2D">—</div><div class="stat-sub" id="st-churn-n">calculando...</div></div>
+    <div class="stat-card"><div class="stat-lbl">Clientes activos</div><div class="stat-val" id="st-active">—</div><div class="stat-sub">is_active = 1</div></div>
+    <div class="stat-card"><div class="stat-lbl">Salario promedio</div><div class="stat-val" id="st-salary">—</div><div class="stat-sub">estimated_salary</div></div>
+    <div class="stat-card"><div class="stat-lbl">Quejas promedio</div><div class="stat-val" id="st-complaints">—</div><div class="stat-sub">clientes con churn=1</div></div>
+    <div class="stat-card"><div class="stat-lbl">Valores faltantes</div><div class="stat-val" id="st-nulls" style="color:#BA7517">—</div><div class="stat-sub">simulados en 3 columnas</div></div>
+  </div>
+  <div class="task" style="margin-bottom:8px">
+    <div class="tn">Columnas con valores faltantes (simulados para NAT)</div>
+    <div class="td"><span class="code">estimated_salary</span> — 5% NaN &nbsp;·&nbsp; <span class="code">credit_score</span> — 4% NaN &nbsp;·&nbsp; <span class="code">tenure_months</span> — 3% NaN</div>
+  </div>
+  <div class="task">
+    <div class="tn">Patrones de churn intencionados</div>
+    <div class="td">
+      · Más quejas → mayor probabilidad de churn<br>
+      · Inactivos (is_active=0) → +30% probabilidad<br>
+      · Credit score &lt; 550 → +20% probabilidad<br>
+      · Balance alto (&gt;30,000) → −10% probabilidad (retención)<br>
+      · Pocas transacciones (&lt;10/mes) → señal de desenganche
+    </div>
+  </div>
+</div>
+
+<div id="section-metodologia" class="section" style="display:none">
+  <div class="phase-nav">
+    <button class="ph-btn active" data-r="purple" onclick="swPhase(0,this)">NAT · Data Engineer</button>
+    <button class="ph-btn" data-r="teal" onclick="swPhase(1,this)">Alfonso · Data Scientist</button>
+    <button class="ph-btn" data-r="blue" onclick="swPhase(2,this)">Lauro · ML Engineer</button>
+    <button class="ph-btn" data-r="amber" onclick="swPhase(3,this)">Regi · Storyteller</button>
+  </div>
+
+  <div id="phase-0" class="phase active">
+    <div class="ph-head ph-purple">
+      <div class="ph-role c-purple">Data Engineer — NAT</div>
+      <div class="ph-title">Limpieza de datos y feature engineering</div>
+      <div class="ph-sub">Trabaja sobre el CSV crudo · entrega el dataset limpio para Alfonso y Lauro</div>
+    </div>
+    <div class="ph-body">
+      <div class="sec-lbl">Limpieza de datos</div>
+      <div class="tasks">
+        <div class="task">
+          <div class="tn">Detectar y manejar valores faltantes</div>
+          <div class="td">El CSV tiene NaN simulados en <span class="code">estimated_salary</span> (~5%), <span class="code">credit_score</span> (~4%) y <span class="code">tenure_months</span> (~3%). Para numéricos imputa con la mediana. Documenta cada decisión en el notebook — no borres filas.</div>
+        </div>
+        <div class="task">
+          <div class="tn">Revisar tipos y rangos</div>
+          <div class="td">Verifica que <span class="code">age</span> esté entre 18–75, <span class="code">credit_score</span> entre 300–850, <span class="code">complaints</span> entre 0–10. Registra cualquier valor fuera de rango antes de limpiar.</div>
+        </div>
+        <div class="task">
+          <div class="tn">Codificar variables categóricas</div>
+          <div class="td"><span class="code">gender</span> → Label Encoding (M=0, F=1). Hazlo reproducible con un diccionario explícito, no con LabelEncoder automático, para que el equipo entienda el mapeo.</div>
+        </div>
+      </div>
+
+      <div class="sec-lbl">Feature engineering (exactamente como pide el README)</div>
+      <div class="tasks">
+        <div class="task">
+          <div class="tn">churn_rate por segmento</div>
+          <div class="td">Agrupa por <span class="code">products</span> y por <span class="code">is_active</span>. Calcula la tasa de churn de cada grupo con <span class="code">groupby + transform('mean')</span> sobre la columna <span class="code">churn</span>. Agrega la columna <span class="code">churn_rate_segment</span> al dataset limpio.</div>
+        </div>
+        <div class="task">
+          <div class="tn">ratio balance/ingresos</div>
+          <div class="td">Calcula <span class="code">balance / estimated_salary</span>. Llámala <span class="code">ratio_balance_ingreso</span>. Clientes con ratio alto tienen más "piel en el juego" — hipótesis: churnean menos. Esto lo confirmará Alfonso en el EDA.</div>
+        </div>
+        <div class="task">
+          <div class="tn">engagement score</div>
+          <div class="td">Combina transacciones y actividad: <span class="code">engagement_score = transactions_last_month * is_active</span>. Clientes activos con muchas transacciones = alto engagement. Clientes inactivos = score 0 independientemente de las transacciones.</div>
+        </div>
+      </div>
+
+      <div class="sec-lbl">Entregables</div>
+      <div class="del-grid">
+        <div class="del del-purple"><div class="del-t">Dataset limpio</div><div class="del-d">churn_clean.csv con features nuevas y sin nulos</div></div>
+        <div class="del del-purple"><div class="del-t">Pipeline reproducible</div><div class="del-d">01_data_engineering.ipynb documentado paso a paso</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="phase-1" class="phase">
+    <div class="ph-head ph-teal">
+      <div class="ph-role c-teal">Data Scientist — Alfonso</div>
+      <div class="ph-title">EDA — encontrar por qué los clientes se van</div>
+      <div class="ph-sub">Trabaja sobre el dataset limpio de NAT · entrega insights para Regi y Lauro</div>
+    </div>
+    <div class="ph-body">
+      <div class="sec-lbl">Las 3 preguntas del README — cómo responderlas</div>
+      <div class="tasks">
+        <div class="task">
+          <div class="tn">¿Los usuarios con menos actividad churnean más?</div>
+          <div class="td">Usa <span class="code">engagement_score</span> (feature de NAT). Divide en cuartiles y calcula la tasa de churn por cuartil. Grafica barras. La respuesta esperada: sí, el cuartil más bajo debería tener 3–4× más churn que el más alto.</div>
+        </div>
+        <div class="task">
+          <div class="tn">¿Las quejas afectan?</div>
+          <div class="td">Cruza <span class="code">complaints</span> vs <span class="code">churn</span>. Cada queja adicional suma ~25% de probabilidad de churn (está en el Dataset.py). Muestra esto con un lineplot o barplot. El insight debe decir cuánto, no solo "sí afectan".</div>
+        </div>
+        <div class="task">
+          <div class="tn">¿El balance importa?</div>
+          <div class="td">Usa <span class="code">ratio_balance_ingreso</span> de NAT. Boxplot separando churn=0 vs churn=1. También cruza si <span class="code">balance > 30,000</span> tiene menor churn — eso está baked in el dataset y debe ser visible.</div>
+        </div>
+      </div>
+
+      <div class="sec-lbl">Visualizaciones clave (exactamente las del README)</div>
+      <div class="tasks">
+        <div class="task">
+          <div class="tn">churn vs transacciones</div>
+          <div class="td">Boxplot de <span class="code">transactions_last_month</span> por <span class="code">churn</span>. Agrega una línea en 10 transacciones — por debajo de ese umbral el riesgo sube. Eso da el insight accionable para Regi.</div>
+        </div>
+        <div class="task">
+          <div class="tn">churn vs complaints</div>
+          <div class="td">Barplot de tasa de churn agrupada por número de quejas (0, 1, 2, 3+). Escribe la conclusión debajo de la gráfica: "Clientes con 3+ quejas tienen X% de tasa de churn vs Y% con 0 quejas."</div>
+        </div>
+        <div class="task">
+          <div class="tn">churn vs tenure</div>
+          <div class="td">Lineplot de tasa de churn por <span class="code">tenure_months</span> agrupado en bins (0–12, 13–36, 37–72, 73–120 meses). Identifica si los clientes nuevos o los antiguos son más vulnerables.</div>
+        </div>
+      </div>
+
+      <div class="sec-lbl">Ejemplos de insights bien contados</div>
+      <div class="insight">"Clientes con menos de 10 transacciones mensuales tienen 4× más probabilidad de churn que los que hacen 30 o más."</div>
+      <div class="insight">"Cada queja adicional aumenta la probabilidad de churn en ~25 puntos porcentuales. Un cliente con 3 quejas tiene más del 70% de probabilidad de irse."</div>
+      <div class="insight">"Clientes inactivos (is_active=0) representan el 40% de la base pero el 68% de los casos de churn."</div>
+
+      <div class="sec-lbl">Entregables</div>
+      <div class="del-grid">
+        <div class="del del-teal"><div class="del-t">3–5 insights claros</div><div class="del-d">Con número, contexto y acción implícita</div></div>
+        <div class="del del-teal"><div class="del-t">02_eda.ipynb</div><div class="del-d">Cada gráfica con título, ejes y conclusión escrita</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="phase-2" class="phase">
+    <div class="ph-head ph-blue">
+      <div class="ph-role c-blue">ML Engineer — Lauro</div>
+      <div class="ph-title">Modelo de clasificación churn (0/1)</div>
+      <div class="ph-sub">Trabaja sobre el dataset limpio de NAT · entrega modelo + explicación de variables</div>
+    </div>
+    <div class="ph-body">
+      <div class="sec-lbl">Modelos sugeridos (en orden, como indica el README)</div>
+      <div class="tasks">
+        <div class="task">
+          <div class="tn">Logistic Regression — línea base obligatoria</div>
+          <div class="td">Empieza aquí. Usa <span class="code">class_weight='balanced'</span> porque el churn no estará al 50/50. Si no supera 0.70 de ROC-AUC en el test set, hay algo mal en los features — revisa con NAT antes de pasar al siguiente modelo.</div>
+        </div>
+        <div class="task">
+          <div class="tn">Random Forest — modelo principal</div>
+          <div class="td">Activa <span class="code">feature_importances_</span> de inmediato. Las top-5 variables te dicen qué le importa realmente al modelo — eso es lo que Regi necesita para el pitch. Usa <span class="code">n_estimators=100</span> como punto de partida.</div>
+        </div>
+        <div class="task">
+          <div class="tn">XGBoost — nivel pro (extra para ganar)</div>
+          <div class="td">Usa <span class="code">scale_pos_weight = n_no_churn / n_churn</span> para el desbalance. Combina con SHAP para explicar predicciones individuales: "Este cliente tiene 87% de probabilidad de churn porque tiene 4 quejas y 3 transacciones en el último mes."</div>
+        </div>
+      </div>
+
+      <div class="sec-lbl">Métricas (exactamente las del README)</div>
+      <div class="tasks">
+        <div class="task">
+          <div class="tn">Accuracy / Precision / Recall / ROC-AUC</div>
+          <div class="td">Reporta las 4 para cada modelo en una tabla comparativa. Prioriza Recall sobre Accuracy — un modelo que no detecta churners es inútil aunque tenga 80% de accuracy. El objetivo mínimo: Recall ≥ 0.70 en la clase churn=1.</div>
+        </div>
+      </div>
+
+      <div class="warn">En este dataset el churn no estará al 50% — habrá más no-churn que churn. Nunca reportes solo Accuracy. Un modelo que predice "nadie churna" puede tener accuracy alta y ser completamente inútil.</div>
+
+      <div class="sec-lbl">Extras para ganar (del README)</div>
+      <div class="tasks">
+        <div class="task">
+          <div class="tn">Feature importance</div>
+          <div class="td">Grafica las top-10 variables con sus importancias. Traduce cada una a lenguaje de negocio para Regi: no "complaints: 0.31" sino "las quejas son el predictor #1 de abandono, por encima del balance o la antigüedad".</div>
+        </div>
+        <div class="task">
+          <div class="tn">SHAP values</div>
+          <div class="td">Usa <span class="code">shap.TreeExplainer</span> con el Random Forest o XGBoost. Muestra el summary plot y explica 1–2 casos individuales de clientes en riesgo alto. Eso convierte el modelo en algo que el negocio puede usar mañana.</div>
+        </div>
+      </div>
+
+      <div class="sec-lbl">Entregables</div>
+      <div class="del-grid">
+        <div class="del del-blue"><div class="del-t">Modelo entrenado</div><div class="del-d">03_modelo.ipynb con tabla comparativa de los 3 modelos</div></div>
+        <div class="del del-blue"><div class="del-t">Explicación de variables</div><div class="del-d">Top-5 features traducidas a lenguaje de negocio</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="phase-3" class="phase">
+    <div class="ph-head ph-amber">
+      <div class="ph-role c-amber">Storyteller — Regi</div>
+      <div class="ph-title">Convertir datos en historia de negocio</div>
+      <div class="ph-sub">Trabaja con los insights de Alfonso y las variables de Lauro · pitch de 5–7 minutos</div>
+    </div>
+    <div class="ph-body">
+      <div class="sec-lbl">Estructura del pitch (exactamente como indica el README)</div>
+      <div class="tasks">
+        <div class="task">
+          <div class="tn">1 · El problema</div>
+          <div class="td">¿Cuánto le cuesta el churn a la fintech en números? Estima: si la base es de 20,000 clientes, el ticket promedio mensual es $X y la tasa de churn es Y%, entonces la fintech pierde $Z al mes. Eso abre el pitch con urgencia.</div>
+        </div>
+        <div class="task">
+          <div class="tn">2 · Hallazgos clave</div>
+          <div class="td">Máximo 3 insights de Alfonso, cada uno con: número concreto + una gráfica + qué significa para el negocio. No leer la gráfica — explicar la consecuencia. Ejemplo del README: "Clientes con menos de 10 transacciones mensuales tienen 4× más probabilidad de churn."</div>
+        </div>
+        <div class="task">
+          <div class="tn">3 · Impacto en negocio</div>
+          <div class="td">Conecta los hallazgos con dinero o retención. Si reducimos el churn en clientes con 3+ quejas un 20%, ¿cuántos clientes salvamos? Usa los números del dataset para hacer la estimación concreta.</div>
+        </div>
+        <div class="task">
+          <div class="tn">4 · Recomendaciones accionables</div>
+          <div class="td">Al menos 3 acciones que la fintech podría tomar la semana siguiente. Ejemplo: "Activar una campaña de reenganche para clientes con engagement_score &lt; 5 y sin quejas — son recuperables." Que cada recomendación tenga un responsable implícito (equipo de producto, CX, marketing).</div>
+        </div>
+      </div>
+
+      <div class="sec-lbl">Lo que NO hacer (directo del README)</div>
+      <div class="warn">
+        No leer gráficas sin contexto — cada visual necesita una conclusión en voz alta.<br>
+        No usar "ROC-AUC", "precision-recall" o "feature importance" sin traducirlos.<br>
+        No terminar sin una recomendación accionable — los datos sin acción no sirven.
+      </div>
+
+      <div class="sec-lbl">Entregables</div>
+      <div class="del-grid">
+        <div class="del del-amber"><div class="del-t">Pitch de 5–7 minutos</div><div class="del-d">Máx. 8 slides · 1 idea por slide</div></div>
+        <div class="del del-amber"><div class="del-t">Estructura clara</div><div class="del-d">Problema → Hallazgos → Impacto → Recomendaciones</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TOTAL = 20000;
+const CHUNK = 1000;
+const PAGE = 50;
+let data = [];
+let page = 0;
+let ready = false;
+
+function rnd(a,b){ return +(Math.random()*(b-a)+a).toFixed(2); }
+function rndInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function maybe(p){ return Math.random() < p; }
+
+function genRow(i){
+  const age = rndInt(18,74);
+  const gender = pick(['M','F']);
+  const is_active = maybe(0.6) ? 1 : 0;
+
+  let complaints = Math.min(10, Math.max(0,
+    Math.round(Math.random() < 0.5 ? 0 : rndInt(0,4)) +
+    (is_active===0 ? rndInt(0,2) : 0)
+  ));
+
+  const tenure_months = maybe(0.03) ? null : rndInt(1,119);
+  const estimated_salary_raw = Math.min(150000, Math.max(12000,
+    age*1200 + rndInt(-10000,24999)
+  ));
+  const estimated_salary = maybe(0.05) ? null : estimated_salary_raw;
+  const sal = estimated_salary || estimated_salary_raw;
+
+  const balance = Math.round(sal * rnd(0.05,0.4));
+
+  const credit_score_raw = Math.min(850, Math.max(300,
+    Math.round(650 + sal/1500 - complaints*15 + rndInt(-40,49))
+  ));
+  const credit_score = maybe(0.04) ? null : credit_score_raw;
+  const cs = credit_score || credit_score_raw;
+
+  const products = pick([1,1,1,1,1,2,2,2,2,3,3,4]);
+  const transactions_last_month = is_active===1
+    ? rndInt(15,79)
+    : rndInt(0,14);
+
+  let cp = 0;
+  cp += complaints * 0.25;
+  cp += (1-is_active) * 0.3;
+  cp += (cs < 550) ? 0.2 : 0;
+  cp -= (balance > 30000) ? 0.1 : 0;
+  cp = Math.min(1, Math.max(0, cp));
+  const churn = Math.random() < cp ? 1 : 0;
+
+  return {
+    customer_id: 1001+i,
+    age, gender,
+    tenure_months,
+    balance,
+    products,
+    credit_score,
+    is_active,
+    estimated_salary,
+    transactions_last_month,
+    complaints,
+    churn
+  };
+}
+
+function buildStats(){
+  const churnRows = data.filter(r=>r.churn===1);
+  const activos = data.filter(r=>r.is_active===1).length;
+  const salaries = data.filter(r=>r.estimated_salary!==null).map(r=>r.estimated_salary);
+  const avgSal = salaries.reduce((s,v)=>s+v,0)/salaries.length;
+  const avgComplaints = (churnRows.reduce((s,r)=>s+r.complaints,0)/churnRows.length).toFixed(1);
+  const nulls = data.reduce((s,r)=>{
+    return s + (r.estimated_salary===null?1:0) + (r.credit_score===null?1:0) + (r.tenure_months===null?1:0);
+  },0);
+
+  document.getElementById('st-churn').textContent = (churnRows.length/TOTAL*100).toFixed(1)+'%';
+  document.getElementById('st-churn-n').textContent = churnRows.length.toLocaleString('es-MX')+' clientes';
+  document.getElementById('st-active').textContent = (activos/TOTAL*100).toFixed(1)+'%';
+  document.getElementById('st-salary').textContent = '$'+Math.round(avgSal).toLocaleString('es-MX');
+  document.getElementById('st-complaints').textContent = avgComplaints+' quejas';
+  document.getElementById('st-nulls').textContent = nulls.toLocaleString('es-MX');
+}
+
+function renderPage(){
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML='';
+  const start = page*PAGE;
+  data.slice(start, start+PAGE).forEach(r=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${r.customer_id}</td>
+      <td>${r.age}</td>
+      <td>${r.gender}</td>
+      <td>${r.tenure_months===null?'<span style="color:var(--color-text-warning)">NaN</span>':r.tenure_months}</td>
+      <td>$${r.balance.toLocaleString('es-MX')}</td>
+      <td>${r.products}</td>
+      <td>${r.credit_score===null?'<span style="color:var(--color-text-warning)">NaN</span>':r.credit_score}</td>
+      <td>${r.is_active===1?'<span class="tag tag-act">Sí</span>':'<span class="tag tag-inact">No</span>'}</td>
+      <td>${r.estimated_salary===null?'<span style="color:var(--color-text-warning)">NaN</span>':'$'+r.estimated_salary.toLocaleString('es-MX')}</td>
+      <td>${r.transactions_last_month}</td>
+      <td>${r.complaints}</td>
+      <td>${r.churn===1?'<span class="tag tag-churn">Churn</span>':'<span class="tag tag-ok">Activo</span>'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  const totalPages = Math.ceil(TOTAL/PAGE);
+  document.getElementById('pg-info').textContent = `Página ${page+1} de ${totalPages} · filas ${start+1}–${Math.min(start+PAGE,TOTAL)}`;
+  document.getElementById('btn-prev').disabled = page===0;
+  document.getElementById('btn-next').disabled = page>=totalPages-1;
+}
+
+function changePage(d){ page+=d; renderPage(); }
+
+function showMain(id, btn){
+  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
+  document.querySelectorAll('.mtab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('section-'+id).style.display='block';
+  btn.classList.add('active');
+}
+
+function swPhase(idx, btn){
+  document.querySelectorAll('.phase').forEach((p,i)=>p.classList.toggle('active',i===idx));
+  document.querySelectorAll('.ph-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function downloadCSV(){
+  const keys = ['customer_id','age','gender','tenure_months','balance','products','credit_score','is_active','estimated_salary','transactions_last_month','complaints','churn'];
+  const rows = [keys.join(','), ...data.map(r=>keys.map(k=>r[k]===null?'':r[k]).join(','))];
+  const blob = new Blob([rows.join('\n')],{type:'text/csv'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='churn_fintech_20000.csv'; a.click();
+}
+
+let generated = 0;
+const pf = document.getElementById('pf');
+const pl = document.getElementById('pl');
+
+function nextChunk(){
+  const end = Math.min(generated+CHUNK, TOTAL);
+  for(let i=generated;i<end;i++) data.push(genRow(i));
+  generated = end;
+  const pct = Math.round(generated/TOTAL*100);
+  pf.style.width = pct+'%';
+  pl.textContent = `Generando registros... ${generated.toLocaleString('es-MX')} / ${TOTAL.toLocaleString('es-MX')}`;
+  if(generated < TOTAL){
+    setTimeout(nextChunk, 0);
+  } else {
+    document.getElementById('prog-wrap').style.display='none';
+    buildStats();
+    renderPage();
+    document.getElementById('section-dataset').style.display='block';
+    document.querySelector('.mtab[data-c="gray"]').classList.add('active');
+    ready = true;
+  }
+}
+
+setTimeout(nextChunk, 50);
+</script>

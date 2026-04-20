@@ -1,0 +1,394 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.top { padding: 1.2rem 0 0.8rem; }
+.badge { display:inline-block; font-size:11px; font-weight:500; padding:3px 10px; border-radius:20px; background:#FAECE7; color:#712B13; margin-bottom:6px; }
+.subtitle { font-size:13px; color:var(--color-text-secondary); }
+.main-tabs { display:flex; gap:6px; flex-wrap:wrap; margin:14px 0 12px; }
+.mtab { font-size:12px; padding:5px 16px; border-radius:20px; border:0.5px solid var(--color-border-tertiary); background:transparent; color:var(--color-text-secondary); cursor:pointer; }
+.mtab.active { font-weight:500; background:var(--color-background-secondary); color:var(--color-text-primary); border-color:var(--color-border-secondary); }
+.section { display:none; }
+.section.active { display:block; }
+.prog-wrap { margin-bottom:10px; }
+.prog-bar { height:3px; background:var(--color-border-tertiary); border-radius:2px; overflow:hidden; }
+.prog-fill { height:100%; background:#D85A30; border-radius:2px; width:0; transition:width .08s; }
+.prog-lbl { font-size:11px; color:var(--color-text-secondary); margin-top:4px; }
+.pager { display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+.pg-btn { font-size:11px; padding:4px 12px; border-radius:16px; border:0.5px solid var(--color-border-tertiary); background:var(--color-background-secondary); color:var(--color-text-secondary); cursor:pointer; }
+.pg-btn:disabled { opacity:.4; cursor:default; }
+.pg-info { font-size:12px; color:var(--color-text-secondary); }
+.tbl-wrap { overflow-x:auto; border-radius:var(--border-radius-lg); border:0.5px solid var(--color-border-tertiary); max-height:360px; overflow-y:auto; }
+table { width:100%; border-collapse:collapse; font-size:11px; }
+thead { position:sticky; top:0; z-index:2; background:var(--color-background-secondary); }
+th { padding:8px 10px; text-align:left; font-weight:500; font-size:10px; color:var(--color-text-secondary); border-bottom:0.5px solid var(--color-border-tertiary); white-space:nowrap; }
+td { padding:6px 10px; border-bottom:0.5px solid var(--color-border-tertiary); color:var(--color-text-primary); white-space:nowrap; font-size:11px; }
+tr:last-child td { border-bottom:none; }
+.nan { color:#BA7517; font-style:italic; }
+.dirty { color:#D85A30; font-weight:500; }
+.tag { display:inline-block; font-size:10px; padding:1px 7px; border-radius:10px; font-weight:500; }
+.tag-churn { background:#FCEBEB; color:#A32D2D; }
+.tag-ok { background:#EAF3DE; color:#3B6D11; }
+.issue-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+.issue-card { border:0.5px solid var(--color-border-tertiary); border-radius:var(--border-radius-md); padding:11px 13px; background:var(--color-background-secondary); }
+.issue-head { display:flex; align-items:center; gap:7px; margin-bottom:6px; }
+.issue-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.issue-title { font-size:12px; font-weight:500; color:var(--color-text-primary); }
+.issue-desc { font-size:11px; color:var(--color-text-secondary); line-height:1.55; }
+.code { font-family:var(--font-mono); font-size:10px; background:var(--color-background-tertiary); border:0.5px solid var(--color-border-tertiary); border-radius:3px; padding:1px 5px; color:var(--color-text-secondary); }
+.stat-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:12px; }
+.stat-card { background:var(--color-background-secondary); border:0.5px solid var(--color-border-tertiary); border-radius:var(--border-radius-md); padding:11px 13px; }
+.stat-lbl { font-size:11px; color:var(--color-text-secondary); margin-bottom:3px; }
+.stat-val { font-size:20px; font-weight:500; color:var(--color-text-primary); }
+.stat-sub { font-size:11px; color:var(--color-text-secondary); margin-top:1px; }
+.footer { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:10px 0 1rem; }
+.ft { font-size:12px; color:var(--color-text-secondary); }
+.ft span { font-weight:500; color:var(--color-text-primary); }
+.dl-btn { font-size:12px; padding:7px 20px; border-radius:20px; border:0.5px solid var(--color-border-secondary); background:var(--color-background-secondary); color:var(--color-text-primary); cursor:pointer; font-weight:500; }
+.dl-btn:hover { border-color:var(--color-border-primary); }
+.section-lbl { font-size:11px; font-weight:500; color:var(--color-text-secondary); text-transform:uppercase; letter-spacing:.05em; margin:14px 0 8px; }
+.section-lbl:first-child { margin-top:0; }
+</style>
+
+<div class="top">
+  <span class="badge">Dataset sucio · 20,000 registros · 9 tipos de suciedad</span>
+  <div class="subtitle">Churn en Fintech mexicana · listo para limpieza por NAT</div>
+</div>
+
+<div class="main-tabs">
+  <button class="mtab active" onclick="showMain('dataset',this)">Vista previa</button>
+  <button class="mtab" onclick="showMain('issues',this)">Problemas inyectados</button>
+  <button class="mtab" onclick="showMain('stats',this)">Estadísticas</button>
+</div>
+
+<div id="prog-wrap" class="prog-wrap">
+  <div class="prog-bar"><div class="prog-fill" id="pf"></div></div>
+  <div class="prog-lbl" id="pl">Generando registros...</div>
+</div>
+
+<div id="section-dataset" class="section">
+  <div class="pager">
+    <button class="pg-btn" id="btn-prev" onclick="changePage(-1)" disabled>← Anterior</button>
+    <span class="pg-info" id="pg-info"></span>
+    <button class="pg-btn" id="btn-next" onclick="changePage(1)">Siguiente →</button>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr>
+        <th>customer_id</th><th>age</th><th>gender</th><th>tenure_months</th>
+        <th>balance</th><th>products</th><th>credit_score</th><th>is_active</th>
+        <th>estimated_salary</th><th>transactions_last_month</th><th>complaints</th><th>churn</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+  <div class="footer">
+    <div class="ft">Formato: <span>CSV</span> · <span>20,000</span> filas · <span>12</span> columnas · múltiples tipos de suciedad</div>
+    <button class="dl-btn" onclick="downloadCSV()">Descargar CSV sucio</button>
+  </div>
+</div>
+
+<div id="section-issues" class="section">
+  <div class="section-lbl">Problemas inyectados — lo que NAT debe encontrar y limpiar</div>
+  <div class="issue-grid">
+
+    <div class="issue-card">
+      <div class="issue-head"><div class="issue-dot" style="background:#E24B4A"></div><div class="issue-title">Valores nulos (~5–8%)</div></div>
+      <div class="issue-desc">Columnas afectadas: <span class="code">estimated_salary</span>, <span class="code">credit_score</span>, <span class="code">tenure_months</span>, <span class="code">balance</span>, <span class="code">complaints</span>. Imputar con mediana o moda según tipo.</div>
+    </div>
+
+    <div class="issue-card">
+      <div class="issue-head"><div class="issue-dot" style="background:#D85A30"></div><div class="issue-title">Outliers imposibles</div></div>
+      <div class="issue-desc"><span class="code">age</span> con valores -5, 0, 150+ · <span class="code">credit_score</span> con 9999 o -100 · <span class="code">balance</span> negativos. Deben detectarse y corregirse o eliminarse.</div>
+    </div>
+
+    <div class="issue-card">
+      <div class="issue-head"><div class="issue-dot" style="background:#BA7517"></div><div class="issue-title">Duplicados exactos</div></div>
+      <div class="issue-desc">~150 filas duplicadas con el mismo <span class="code">customer_id</span>. Problema clásico de joins mal hechos. Deben eliminarse antes de modelar.</div>
+    </div>
+
+    <div class="issue-card">
+      <div class="issue-head"><div class="issue-dot" style="background:#639922"></div><div class="issue-title">Inconsistencias en gender</div></div>
+      <div class="issue-desc">Valores mezclados: <span class="code">'M'</span>, <span class="code">'male'</span>, <span class="code">'MALE'</span>, <span class="code">'m'</span>, <span class="code">'F'</span>, <span class="code">'female'</span>, <span class="code">'f'</span>. Hay que estandarizar antes de encodear.</div>
+    </div>
+
+    <div class="issue-card">
+      <div class="issue-head"><div class="issue-dot" style="background:#534AB7"></div><div class="issue-title">Inconsistencias en is_active</div></div>
+      <div class="issue-desc">Valores mezclados: <span class="code">0</span>, <span class="code">1</span>, <span class="code">'yes'</span>, <span class="code">'no'</span>, <span class="code">'True'</span>, <span class="code">'False'</span>. Debe normalizarse a 0/1 entero.</div>
+    </div>
+
+    <div class="issue-card">
+      <div class="issue-head"><div class="issue-dot" style="background:#185FA5"></div><div class="issue-title">Inconsistencias en churn</div></div>
+      <div class="issue-desc">Valores mezclados: <span class="code">0</span>, <span class="code">1</span>, <span class="code">'yes'</span>, <span class="code">'no'</span>, <span class="code">'1.0'</span>, <span class="code">'0.0'</span>. La variable target sucia es el error más peligroso.</div>
+    </div>
+
+    <div class="issue-card">
+      <div class="issue-head"><div class="issue-dot" style="background:#0F6E56"></div><div class="issue-title">Espacios y strings sucios</div></div>
+      <div class="issue-desc"><span class="code">gender</span> con espacios: <span class="code">' M'</span>, <span class="code">'F '</span>. <span class="code">customer_id</span> con prefijos: <span class="code">'ID-1001'</span>. Hay que aplicar <span class="code">.strip()</span> y parsear IDs.</div>
+    </div>
+
+    <div class="issue-card">
+      <div class="issue-head"><div class="issue-dot" style="background:#993556"></div><div class="issue-title">Valores fuera de rango lógico</div></div>
+      <div class="issue-desc"><span class="code">products</span> con valor 0 o 99 · <span class="code">transactions_last_month</span> negativos · <span class="code">complaints</span> con valor 50. Detectar con reglas de dominio, no solo estadística.</div>
+    </div>
+
+    <div class="issue-card">
+      <div class="issue-head"><div class="issue-dot" style="background:#888780"></div><div class="issue-title">Columna trampa: customer_name</div></div>
+      <div class="issue-desc">Columna de texto libre con nombres ficticios. No aporta al modelo — debe descartarse. Simula datos PII que en la vida real no se deberían usar para predecir.</div>
+    </div>
+
+  </div>
+</div>
+
+<div id="section-stats" class="section">
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-lbl">Total filas (con duplicados)</div><div class="stat-val">20,000</div><div class="stat-sub">~150 duplicados inyectados</div></div>
+    <div class="stat-card"><div class="stat-lbl">Tasa de churn base</div><div class="stat-val" id="st-churn" style="color:#A32D2D">—</div><div class="stat-sub" id="st-churn-sub">calculando...</div></div>
+    <div class="stat-card"><div class="stat-lbl">Celdas con NaN</div><div class="stat-val" id="st-nulls" style="color:#BA7517">—</div><div class="stat-sub">en 5 columnas distintas</div></div>
+    <div class="stat-card"><div class="stat-lbl">Filas con outliers imposibles</div><div class="stat-val" id="st-outliers" style="color:#D85A30">—</div><div class="stat-sub">age, credit_score, balance</div></div>
+    <div class="stat-card"><div class="stat-lbl">Clientes activos</div><div class="stat-val" id="st-active">—</div><div class="stat-sub">is_active = 1 (antes de limpiar)</div></div>
+    <div class="stat-card"><div class="stat-lbl">Columnas totales</div><div class="stat-val">13</div><div class="stat-sub">12 originales + customer_name (trampa)</div></div>
+  </div>
+  <div class="issue-card" style="margin-top:4px">
+    <div class="issue-head"><div class="issue-dot" style="background:#534AB7"></div><div class="issue-title">Orden de limpieza recomendado para NAT</div></div>
+    <div class="issue-desc" style="line-height:1.8">
+      1. Eliminar columna <span class="code">customer_name</span> (PII, no útil)<br>
+      2. Parsear <span class="code">customer_id</span> (quitar prefijo 'ID-')<br>
+      3. Eliminar duplicados por <span class="code">customer_id</span><br>
+      4. Estandarizar <span class="code">gender</span>, <span class="code">is_active</span>, <span class="code">churn</span> a valores canónicos<br>
+      5. Aplicar <span class="code">.strip()</span> a todas las columnas string<br>
+      6. Detectar y tratar outliers imposibles (age, credit_score, balance, products)<br>
+      7. Imputar valores nulos con mediana por columna<br>
+      8. Validar rangos finales antes de pasar el dataset a Alfonso y Lauro
+    </div>
+  </div>
+</div>
+
+<script>
+const TOTAL = 20000;
+const CHUNK = 800;
+const PAGE = 50;
+let allData = [];
+let page = 0;
+
+const names = ['Carlos','Ana','Luis','María','Jorge','Sofía','Pedro','Laura','Miguel','Valentina','Diego','Fernanda','Andrés','Camila','Roberto','Daniela','Eduardo','Gabriela','Alejandro','Natalia'];
+const lastnames = ['García','López','Martínez','González','Hernández','Pérez','Rodríguez','Sánchez','Ramírez','Torres'];
+
+function rndInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+function rnd(a,b){ return Math.random()*(b-a)+a; }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function maybe(p){ return Math.random()<p; }
+
+const genderVariants = {
+  M: ['M','M','M','M','male','MALE','m',' M','M '],
+  F: ['F','F','F','F','female','FEMALE','f',' F','F ']
+};
+const activeVariants = {
+  1: [1,1,1,'yes','True','1'],
+  0: [0,0,0,'no','False','0']
+};
+const churnVariants = {
+  1: [1,1,1,'yes','1.0',1],
+  0: [0,0,0,'no','0.0',0]
+};
+
+function genRow(i){
+  const age_clean = rndInt(18,74);
+  const is_active_clean = maybe(0.6)?1:0;
+
+  let complaints_clean = Math.min(10, Math.max(0,
+    (maybe(0.5)?0:rndInt(0,4)) + (is_active_clean===0?rndInt(0,2):0)
+  ));
+
+  const tenure_clean = rndInt(1,119);
+  const sal_clean = Math.min(150000,Math.max(12000, age_clean*1200+rndInt(-10000,24999)));
+  const balance_clean = Math.round(sal_clean*rnd(0.05,0.4));
+  const cs_clean = Math.min(850,Math.max(300, Math.round(650+sal_clean/1500-complaints_clean*15+rndInt(-40,49))));
+  const products_clean = pick([1,1,1,1,1,2,2,2,2,3,3,4]);
+  const tx_clean = is_active_clean===1?rndInt(15,79):rndInt(0,14);
+
+  let cp=0;
+  cp += complaints_clean*0.25;
+  cp += (1-is_active_clean)*0.3;
+  cp += (cs_clean<550)?0.2:0;
+  cp -= (balance_clean>30000)?0.1:0;
+  cp = Math.min(1,Math.max(0,cp));
+  const churn_clean = Math.random()<cp?1:0;
+
+  const name = pick(names)+' '+pick(lastnames);
+  const cid_dirty = maybe(0.08)?'ID-'+(1001+i):(1001+i);
+
+  let age = age_clean;
+  if(maybe(0.025)) age = pick([-5,0,130,150,999]);
+
+  let credit_score = maybe(0.04)?null:cs_clean;
+  if(credit_score!==null && maybe(0.02)) credit_score = pick([-100,9999,0]);
+
+  let balance = maybe(0.05)?null:balance_clean;
+  if(balance!==null && maybe(0.02)) balance = pick([-5000,-1,-99999]);
+
+  let tenure_months = maybe(0.03)?null:tenure_clean;
+
+  let estimated_salary = maybe(0.05)?null:sal_clean;
+
+  let complaints = maybe(0.04)?null:complaints_clean;
+  if(complaints!==null && maybe(0.015)) complaints = pick([50,99,-1]);
+
+  let products = products_clean;
+  if(maybe(0.015)) products = pick([0,99,-1]);
+
+  let transactions_last_month = tx_clean;
+  if(maybe(0.015)) transactions_last_month = pick([-10,-1,-5]);
+
+  const gender_raw = genderVariants[maybe(0.5)?'M':'F'];
+  const g_base = Math.random()<0.5?'M':'F';
+  let gender = pick(genderVariants[g_base]);
+
+  let is_active = pick(activeVariants[is_active_clean]);
+  let churn = pick(churnVariants[churn_clean]);
+
+  return {
+    customer_id: cid_dirty,
+    customer_name: name,
+    age,
+    gender,
+    tenure_months,
+    balance,
+    products,
+    credit_score,
+    is_active,
+    estimated_salary,
+    transactions_last_month,
+    complaints,
+    churn,
+    _churn_clean: churn_clean,
+    _active_clean: is_active_clean,
+    _has_impossible: (age<0||age>120||(credit_score!==null&&(credit_score<300||credit_score>850))||(balance!==null&&balance<0))
+  };
+}
+
+function buildStats(){
+  const churnRows = allData.filter(r=>r._churn_clean===1);
+  const active = allData.filter(r=>r._active_clean===1);
+  const nullCount = allData.reduce((s,r)=>{
+    return s +
+      (r.estimated_salary===null?1:0)+
+      (r.credit_score===null?1:0)+
+      (r.tenure_months===null?1:0)+
+      (r.balance===null?1:0)+
+      (r.complaints===null?1:0);
+  },0);
+  const outlierCount = allData.filter(r=>r._has_impossible).length;
+
+  document.getElementById('st-churn').textContent=(churnRows.length/TOTAL*100).toFixed(1)+'%';
+  document.getElementById('st-churn-sub').textContent=churnRows.length.toLocaleString('es-MX')+' clientes';
+  document.getElementById('st-nulls').textContent=nullCount.toLocaleString('es-MX');
+  document.getElementById('st-outliers').textContent=outlierCount.toLocaleString('es-MX');
+  document.getElementById('st-active').textContent=(active.length/TOTAL*100).toFixed(1)+'%';
+}
+
+function cellVal(v, col){
+  if(v===null) return '<span class="nan">NaN</span>';
+  const s = String(v);
+  const dirty = (
+    (col==='age' && (v<0||v>120)) ||
+    (col==='credit_score' && typeof v==='number' && (v<300||v>850)) ||
+    (col==='balance' && typeof v==='number' && v<0) ||
+    (col==='products' && (v===0||v===99||v===-1)) ||
+    (col==='complaints' && typeof v==='number' && v>10) ||
+    (col==='transactions_last_month' && typeof v==='number' && v<0) ||
+    (col==='gender' && !['M','F'].includes(s.trim())) ||
+    (col==='is_active' && !([0,1].includes(v))) ||
+    (col==='churn' && !([0,1].includes(v))) ||
+    (col==='customer_id' && typeof v==='string' && v.startsWith('ID-'))
+  );
+  if(dirty) return `<span class="dirty">${s}</span>`;
+  return s;
+}
+
+function renderPage(){
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML='';
+  const start = page*PAGE;
+  allData.slice(start,start+PAGE).forEach(r=>{
+    const churnClean = r._churn_clean;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${cellVal(r.customer_id,'customer_id')}</td>
+      <td>${cellVal(r.age,'age')}</td>
+      <td>${cellVal(r.gender,'gender')}</td>
+      <td>${cellVal(r.tenure_months,'tenure_months')}</td>
+      <td>${cellVal(r.balance,'balance')}</td>
+      <td>${cellVal(r.products,'products')}</td>
+      <td>${cellVal(r.credit_score,'credit_score')}</td>
+      <td>${cellVal(r.is_active,'is_active')}</td>
+      <td>${cellVal(r.estimated_salary,'estimated_salary')}</td>
+      <td>${cellVal(r.transactions_last_month,'transactions_last_month')}</td>
+      <td>${cellVal(r.complaints,'complaints')}</td>
+      <td>${churnClean===1?'<span class="tag tag-churn">1</span>':'<span class="tag tag-ok">0</span>'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  const total = Math.ceil(TOTAL/PAGE);
+  document.getElementById('pg-info').textContent=`Página ${page+1} de ${total} · filas ${start+1}–${Math.min(start+PAGE,TOTAL)}`;
+  document.getElementById('btn-prev').disabled=page===0;
+  document.getElementById('btn-next').disabled=page>=total-1;
+}
+
+function changePage(d){ page+=d; renderPage(); }
+
+function showMain(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
+  document.querySelectorAll('.mtab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('section-'+id).style.display='block';
+  btn.classList.add('active');
+}
+
+function downloadCSV(){
+  const keys = ['customer_id','customer_name','age','gender','tenure_months','balance','products','credit_score','is_active','estimated_salary','transactions_last_month','complaints','churn'];
+  const rows = [keys.join(','), ...allData.map(r=>
+    keys.map(k=>{
+      const v = r[k];
+      if(v===null||v===undefined) return '';
+      const s = String(v);
+      return s.includes(',')?`"${s}"`:s;
+    }).join(',')
+  )];
+  const blob = new Blob([rows.join('\n')],{type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'churn_fintech_20000_sucio.csv';
+  a.click();
+}
+
+let generated = 0;
+const pf = document.getElementById('pf');
+const pl = document.getElementById('pl');
+
+function nextChunk(){
+  const end = Math.min(generated+CHUNK, TOTAL);
+  for(let i=generated;i<end;i++) allData.push(genRow(i));
+
+  // inject duplicates on last chunk
+  if(end === TOTAL){
+    const sample = allData.slice(0,150).map(r=>({...r}));
+    for(let i=0;i<150;i++) allData[rndInt(0,TOTAL-1)] = {...sample[i]};
+  }
+
+  generated = end;
+  const pct = Math.round(generated/TOTAL*100);
+  pf.style.width=pct+'%';
+  pl.textContent=`Generando y ensuciando... ${generated.toLocaleString('es-MX')} / ${TOTAL.toLocaleString('es-MX')}`;
+
+  if(generated < TOTAL){
+    setTimeout(nextChunk,0);
+  } else {
+    document.getElementById('prog-wrap').style.display='none';
+    buildStats();
+    renderPage();
+    document.getElementById('section-dataset').style.display='block';
+    document.querySelector('.mtab').classList.add('active');
+  }
+}
+
+setTimeout(nextChunk,50);
+</script>
